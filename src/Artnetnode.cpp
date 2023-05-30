@@ -20,15 +20,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <Artnetnode.h>
-#include <Udp.h>
 
 const char Artnetnode::artnetId[] = ARTNET_ID;
 
-//Artnetnode::Artnetnode(const std::shared_ptr<UDP> &Udp)
+
+
+
 Artnetnode::Artnetnode()
 {
-  //this->Udp = Udp;
-
+  //Udp = EthernetUDP();
   // Initalise DMXOutput array
   for (int i = 0; i < DMX_MAX_OUTPUTS; i++) {
     DMXOutputs[i][0] = 0xFF;
@@ -53,16 +53,20 @@ Artnetnode::Artnetnode()
 /**
 @retval 0 Ok
 */
-uint8_t Artnetnode::begin(String hostname)
+uint8_t Artnetnode::beginWiFi(IPAddress local_IP, IPAddress local_Mask, String hostname)
 {
   byte mac[6];
 
+  Udp = new WiFiUDP();
+
   Udp->begin(ARTNET_PORT);
-  localIP = WiFi.localIP();
-  localMask = WiFi.subnetMask();
+
+  localIP = local_IP;
+  localMask = local_Mask;
+
   localBroadcast = IPAddress((uint32_t)localIP | ~(uint32_t)localMask);
 
-  WiFi.macAddress(mac);
+  WiFi.macAddress(mac); // nescessary?? 
   PollReplyPacket.setMac(mac);
   PollReplyPacket.setIP(localIP);
   PollReplyPacket.canDHCP(true);
@@ -73,9 +77,27 @@ uint8_t Artnetnode::begin(String hostname)
   return 0;
 }
 
-void Artnetnode::setUDPConnection(const std::shared_ptr<UDP> &Udp)
+uint8_t Artnetnode::beginEthernet(IPAddress local_IP, IPAddress local_Mask, String hostname)
 {
-  this->Udp = Udp;
+  byte mac[6];
+
+  Udp = new EthernetUDP();
+
+  Udp->begin(ARTNET_PORT);
+
+  localIP = local_IP;
+  localMask = local_Mask;
+
+  localBroadcast = IPAddress((uint32_t)localIP | ~(uint32_t)localMask);
+
+  PollReplyPacket.setMac(mac);
+  PollReplyPacket.setIP(localIP);
+  PollReplyPacket.canDHCP(true);
+  PollReplyPacket.isDHCP(true);
+
+  host = hostname;
+
+  return 0;
 }
 
 void Artnetnode::setShortName(const char name[])

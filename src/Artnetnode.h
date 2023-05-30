@@ -31,6 +31,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #error "Architecture not supported!"
 #endif
 
+#include <Udp.h>
+#include <WiFiUdp.h>
+#include <EthernetUdp.h>
+
 #include "OpCodes.h"
 #include "NodeReportCodes.h"
 #include "StyleCodes.h"
@@ -44,11 +48,14 @@ class Artnetnode
 {
 public:
   //Artnetnode(const std::shared_ptr<UDP> &Udp);
+  //Artnetnode();
+  //Artnetnode(UDP * Udp_obj);
   Artnetnode();
 
-  uint8_t begin(String hostname = "");
+
+  uint8_t beginWiFi(IPAddress local_IP, IPAddress local_Mask, String hostname="");
+  uint8_t beginEthernet(IPAddress local_IP, IPAddress local_Mask, String hostname="");
   uint16_t read();
-  void setUDPConnection(const std::shared_ptr<UDP> &Udp);
 
   // Node identity
   void setShortName(const char name[]);
@@ -101,7 +108,8 @@ public:
   }
 
 private:
-  std::shared_ptr<UDP> Udp;
+  UDP * Udp;
+  //EthernetUDP Udp;
   PollReply PollReplyPacket;
   String host;
 
